@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 
 import { sendInfo, sendError } from "vscode-extension-telemetry-wrapper";
 import { getJavaHome } from "./utility";
+import { buildNoConfigPathAppendValue } from "./pathUtil";
 
 /**
  * Registers the configuration-less debugging setup for the extension.
@@ -91,14 +92,7 @@ export async function registerNoConfigDebug(
     }
 
     const noConfigScriptsDir = path.join(extPath, 'bundled', 'scripts', 'noConfigScripts');
-    const pathSeparator = process.platform === 'win32' ? ';' : ':';
-
-    // Check if the current PATH already ends with a path separator to avoid double separators
-    const currentPath = process.env.PATH || '';
-    const needsSeparator = currentPath.length > 0 && !currentPath.endsWith(pathSeparator);
-    const pathValueToAppend = needsSeparator ? `${pathSeparator}${noConfigScriptsDir}` : noConfigScriptsDir;
-
-    collection.append('PATH', pathValueToAppend);
+    collection.append('PATH', buildNoConfigPathAppendValue(noConfigScriptsDir));
 
     // create file system watcher for the debuggerAdapterEndpointFolder for when the communication port is written
     const fileSystemWatcher = vscode.workspace.createFileSystemWatcher(
